@@ -1,0 +1,68 @@
+{
+  "type": "dir",
+  "name": "video_interview",
+  "relpath": ".",
+  "children": [
+    {
+      "type": "dir",
+      "name": "models",
+      "relpath": "models",
+      "children": []
+    },
+    {
+      "type": "dir",
+      "name": "temp",
+      "relpath": "temp",
+      "children": []
+    },
+    {
+      "type": "file",
+      "name": "docker-compose.yml",
+      "relpath": "docker-compose.yml",
+      "is_link": false,
+      "ext": ".yml"
+    },
+    {
+      "type": "file",
+      "name": "Dockerfile",
+      "relpath": "Dockerfile",
+      "is_link": false,
+      "ext": ""
+    },
+    {
+      "type": "file",
+      "name": "README.md",
+      "relpath": "README.md",
+      "is_link": false,
+      "ext": ".md"
+    },
+    {
+      "type": "file",
+      "name": "requirements.txt",
+      "relpath": "requirements.txt",
+      "is_link": false,
+      "ext": ".txt"
+    },
+    {
+      "type": "file",
+      "name": "run.sh",
+      "relpath": "run.sh",
+      "is_link": false,
+      "ext": ".sh"
+    },
+    {
+      "type": "file",
+      "name": "streamlit_app.py",
+      "relpath": "streamlit_app.py",
+      "is_link": false,
+      "ext": ".py"
+    },
+    {
+      "type": "file",
+      "name": "video_processing.py",
+      "relpath": "video_processing.py",
+      "is_link": false,
+      "ext": ".py"
+    }
+  ]
+}
