@@ -238,47 +238,67 @@ def call_openai_on_tree_json(
 
     return "\n".join(outputs).strip() + "\n"
 
-def main(
-    path: str = os.path.join(os.path.expanduser("~"), "Desktop/video_interview/"),
-    json_out: Optional[str] = "tree.json",
-    response_out: str = "llm_suggestions.md",
-    pretty: bool = True,
-    max_depth: int = 0,
-    include_hidden: bool = False,
-    show_sizes: bool = False,
-    follow_symlinks: bool = False,
-    no_default_excludes: bool = False,
-    exclude: Optional[List[str]] = None,
-    model: str = "gpt-4o-mini",
-    max_chars: int = 12000,
-    api_key_env: str = "OPENAI_API_KEY",
-    base_url: Optional[str] = None,
-):
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='Generate a JSON directory tree and get LLM suggestions.')
+    parser.add_argument('--path', type=str, default=os.path.join(os.path.expanduser("~"), "Desktop/video_interview/"),
+                        help='The root path to start building the directory tree.')
+    parser.add_argument('--json_out', type=str, default='tree.json',
+                        help='The output file for the JSON directory tree.')
+    parser.add_argument('--response_out', type=str, default='llm_suggestions.md',
+                        help='The output file for the LLM suggestions.')
+    parser.add_argument('--pretty', action='store_true',
+                        help='Pretty print the JSON output.')
+    parser.add_argument('--max_depth', type=int, default=0,
+                        help='The maximum depth to traverse the directory tree.')
+    parser.add_argument('--include_hidden', action='store_true',
+                        help='Include hidden files and directories.')
+    parser.add_argument('--show_sizes', action='store_true',
+                        help='Show file sizes in the JSON output.')
+    parser.add_argument('--follow_symlinks', action='store_true',
+                        help='Follow symbolic links.')
+    parser.add_argument('--no_default_excludes', action='store_true',
+                        help='Do not exclude default directories like .git, node_modules, etc.')
+    parser.add_argument('--exclude', type=str, nargs='*', default=[],
+                        help='Additional directories or files to exclude.')
+    parser.add_argument('--model', type=str, default='gpt-4o-mini',
+                        help='The model to use for LLM suggestions.')
+    parser.add_argument('--max_chars', type=int, default=12000,
+                        help='The maximum number of characters per chunk for LLM input.')
+    parser.add_argument('--api_key_env', type=str, default='OPENAI_API_KEY',
+                        help='The environment variable for the OpenAI API key.')
+    parser.add_argument('--base_url', type=str, default=None,
+                        help='The base URL for the OpenAI API.')
+    return parser.parse_args()
+
+
+def main():
+    args = parse_arguments()
+
     excludes = set()
-    if not no_default_excludes:
+    if not args.no_default_excludes:
         excludes |= set(DEFAULT_EXCLUDES)
-    excludes |= set(exclude or [])
+    excludes |= set(args.exclude or [])
 
     tree = build_tree_json(
-        root=path,
-        max_depth=max_depth,
-        include_hidden=include_hidden,
-        show_sizes=show_sizes,
+        root=args.path,
+        max_depth=args.max_depth,
+        include_hidden=args.include_hidden,
+        show_sizes=args.show_sizes,
         excludes=excludes,
-        follow_symlinks=follow_symlinks,
+        follow_symlinks=args.follow_symlinks,
     )
 
     # Save JSON
-    if json_out:
+    if args.json_out:
         try:
-            with open(json_out, "w", encoding="utf-8") as f:
-                if pretty:
+            with open(args.json_out, "w", encoding="utf-8") as f:
+                if args.pretty:
                     json.dump(tree, f, indent=2, ensure_ascii=False)
                 else:
                     json.dump(tree, f, separators=(",", ":"), ensure_ascii=False)
-            print(f"Wrote JSON tree to: {json_out}")
+            print(f"Wrote JSON tree to: {args.json_out}")
         except OSError as e:
-            print(f"Error writing {json_out}: {e}", file=sys.stderr)
+            print(f"Error writing {args.json_out}: {e}", file=sys.stderr)
             sys.exit(1)
     else:
         print(json.dumps(tree, indent=2, ensure_ascii=False))
@@ -290,10 +310,10 @@ def main(
     try:
         response_text = call_openai_on_tree_json(
             tree_json_str=tree_json_str,
-            model=model,
-            max_chars=max_chars,
-            api_key_env=api_key_env,
-            base_url=base_url,
+            model=args.model,
+            max_chars=args.max_chars,
+            api_key_env=args.api_key_env,
+            base_url=args.base_url,
         )
     except Exception as e:
         print(f"[LLM] Error: {e}", file=sys.stderr)
@@ -301,11 +321,11 @@ def main(
 
     # Save LLM response
     try:
-        with open(response_out, "w", encoding="utf-8") as f:
+        with open(args.response_out, "w", encoding="utf-8") as f:
             f.write(response_text)
-        print(f"Wrote LLM suggestions to: {response_out}")
+        print(f"Wrote LLM suggestions to: {args.response_out}")
     except OSError as e:
-        print(f"Error writing {response_out}: {e}", file=sys.stderr)
+        print(f"Error writing {args.response_out}: {e}", file=sys.stderr)
         sys.exit(3)
 
 if __name__ == "__main__":
